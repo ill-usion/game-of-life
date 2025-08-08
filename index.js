@@ -1,7 +1,11 @@
 const CELL_SIZE = 6; // one cell = 6x6 pixels
 
 const canvas = document.getElementById("game");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
 const ctx = canvas.getContext("2d");
+
 
 const fpsSlider = document.getElementById("fps");
 const fpsDisplay = document.getElementById("fps-display");
@@ -126,17 +130,22 @@ function drawGrid() {
     ctx.lineWidth = 1;
     ctx.strokeStyle = "#ddd";
     ctx.beginPath();
-    for (var y = 0; y < canvas.height; y += CELL_SIZE) {
+
+    // Horizontal lines
+    for (let y = 0; y < canvas.height; y += CELL_SIZE) {
         ctx.moveTo(0, y);
-        ctx.lineTo(canvas.height, y);
+        ctx.lineTo(canvas.width, y);
     }
 
-    for (var x = 0; x < canvas.width; x += CELL_SIZE) {
+    // Vertical lines
+    for (let x = 0; x < canvas.width; x += CELL_SIZE) {
         ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.width);
+        ctx.lineTo(x, canvas.height);
     }
+
     ctx.stroke();
 }
+
 
 function drawCells() {
     // Clear the screen before redrawing
