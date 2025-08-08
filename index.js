@@ -47,18 +47,18 @@ function neighborsCount(cx, cy) {
         [+0, +1],
         [+1, +0],
         [-1, -1],
-        [-0, -1],
-        [-1, -0],
+        [0, -1],
+        [-1, 0],
         [+1, -1],
         [-1, +1],
     ];
 
     var count = 0;
-    for (const offset of potentialNeighborOffsets) {
-        const potentialNeighbor = packCoord(cx + offset[0], cy + offset[1]);
+    for (const [ox, oy] of potentialNeighborOffsets) {
+        const [nx, ny] = wrapCoord(cx + ox, cy + oy);
+        const potentialNeighbor = packCoord(nx, ny);
         if (activeCells.has(potentialNeighbor)) count++;
     }
-
     return count;
 }
 
@@ -90,8 +90,10 @@ function simulate() {
 
             // There is potential for a new cell to be born
             for (var ny = -1; ny <= 1; ny++)
-                for (var nx = -1; nx <= 1; nx++)
-                    potentialCellsNext.add(packCoord(x + nx, y + ny));
+                for (var nx = -1; nx <= 1; nx++) {
+                    const [wx, wy] = wrapCoord(x + nx, y + ny);
+                    potentialCellsNext.add(packCoord(wx, wy));
+                }
         }
     }
 
