@@ -6,7 +6,6 @@ canvas.height = window.innerHeight;
 
 const ctx = canvas.getContext("2d");
 
-
 const fpsSlider = document.getElementById("fps");
 const fpsDisplay = document.getElementById("fps-display");
 
@@ -24,13 +23,13 @@ var simIntervalId = null;
 
 var mousePos = { x: 0, y: 0 };
 var penDown = false;
-const WIDTH = Math.floor(canvas.width / CELL_SIZE);
-const HEIGHT = Math.floor(canvas.height / CELL_SIZE);
+var width = Math.floor(canvas.width / CELL_SIZE);
+var height = Math.floor(canvas.height / CELL_SIZE);
 var fpsDelay = (1 / 30) * 1000; // 30fps
 
 function wrapCoord(x, y) {
-    const wrappedX = ((x % WIDTH) + WIDTH) % WIDTH;
-    const wrappedY = ((y % HEIGHT) + HEIGHT) % HEIGHT;
+    const wrappedX = ((x % width) + width) % width;
+    const wrappedY = ((y % height) + height) % height;
     return [wrappedX, wrappedY];
 }
 
@@ -146,7 +145,6 @@ function drawGrid() {
     ctx.stroke();
 }
 
-
 function drawCells() {
     // Clear the screen before redrawing
     clearScreen();
@@ -188,6 +186,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    width = Math.floor(canvas.width / CELL_SIZE);
+    height = Math.floor(canvas.height / CELL_SIZE);
+    drawGrid();
+    drawCells();
+});
+
 document.addEventListener("keydown", (event) => {
     switch (event.key.toLowerCase()) {
         case " ":
@@ -204,12 +211,12 @@ document.addEventListener("keydown", (event) => {
         case "e":
             for (
                 var y = Math.max(mousePos.y - 25, 0);
-                y <= Math.min(mousePos.y + 25, HEIGHT);
+                y <= Math.min(mousePos.y + 25, height);
                 y++
             )
                 for (
                     var x = Math.max(mousePos.x - 25, 0);
-                    x <= Math.min(mousePos.x + 25, WIDTH);
+                    x <= Math.min(mousePos.x + 25, width);
                     x++
                 ) {
                     if (Math.random() > 0.5) continue;
