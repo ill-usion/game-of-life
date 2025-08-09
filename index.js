@@ -1,6 +1,7 @@
 const CELL_SIZE = 6; // one cell = 6x6 pixels
 
 const canvas = document.getElementById("game");
+// Resize canvas to fit screen
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
@@ -23,20 +24,38 @@ var simIntervalId = null;
 
 var mousePos = { x: 0, y: 0 };
 var penDown = false;
+// Simulation height and width
 var width = Math.floor(canvas.width / CELL_SIZE);
 var height = Math.floor(canvas.height / CELL_SIZE);
 var fpsDelay = (1 / 30) * 1000; // 30fps
 
+/**
+ * Wraps the provided coordinates to a torus
+ * @param {Number} x X position
+ * @param {Number} y Y position
+ * @returns Wrapped coordinates in an array [x, y]
+ */
 function wrapCoord(x, y) {
     const wrappedX = ((x % width) + width) % width;
     const wrappedY = ((y % height) + height) % height;
     return [wrappedX, wrappedY];
 }
 
+/**
+ * Packs (x, y) corrdinates to a single `BigInt`
+ * @param {Number} x X position
+ * @param {Number} y Y Position
+ * @returns The packed coordinate
+ */
 function packCoord(x, y) {
     return (BigInt(y) << 32n) | BigInt(x);
 }
 
+/**
+ * Unpacks packed coordinates to (x, y) and wraps them
+ * @param {BigInt} packed (x, y) in packed form
+ * @returns Unpacked [x, y] array
+ */
 function unpackCoord(packed) {
     const x = Number(packed & 0xffffffffn);
     const y = Number(packed >> 32n);
@@ -44,7 +63,19 @@ function unpackCoord(packed) {
     return wrapCoord(x, y);
 }
 
+/**
+ * Checks the surrounding cells and counts the number of alive cells
+ * @param {Number} cx Cell X
+ * @param {Number} cy Cell Y
+ * @returns The number of neighboring alive cells
+ */
 function neighborsCount(cx, cy) {
+    // Offsets for possible neighboring alive cells
+    /*
+        (-1, -1), (+0, -1), (+1, -1)
+        (-1, -0), (cx, cy), (+1, +0)
+        (-1, +1), (+0, +1), (+1, +1)
+    */
     const potentialNeighborOffsets = [
         [+1, +1],
         [+0, +1],
@@ -65,6 +96,9 @@ function neighborsCount(cx, cy) {
     return count;
 }
 
+/**
+ * Simulates a generation of cell life
+ */
 function simulate() {
     activeCells = activeCellsNext;
     activeCellsNext = new Set();
@@ -100,31 +134,58 @@ function simulate() {
         }
     }
 
+    // Increment the generation count, draw cells and update labels
     generation++;
     updateLabels();
-
-    // Draw the active cells
     drawCells();
 }
 
+/**
+ * Starts the simulation
+ */
 function startSimulation() {
     simIntervalId = setInterval(simulate, fpsDelay);
 }
 
+/**
+ * Stops the simulation
+ */
 function stopSimulation() {
     clearInterval(simIntervalId);
     simIntervalId = null;
 }
 
+/**
+ * Updates the stats on the screen
+ */
 function updateLabels() {
     generationSpan.innerText = generation.toString();
     cellsSpan.innerText = activeCells.size;
 }
 
+/**
+ * Clears the game canvas
+ */
 function clearScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
+/**
+ * Resets the game
+ */
+function resetGame() {
+    activeCells = new Set();
+    activeCellsNext = new Set();
+    potentialCells = new Set();
+    potentialCellsNext = new Set();
+    generation = 0;
+    drawCells();
+    updateLabels();
+}
+
+/**
+ * Draws an empty grid for better visuals
+ */
 function drawGrid() {
     ctx.lineWidth = 1;
     ctx.strokeStyle = "#ddd";
@@ -145,6 +206,9 @@ function drawGrid() {
     ctx.stroke();
 }
 
+/**
+ * Draws alive cells on the game canvas
+ */
 function drawCells() {
     // Clear the screen before redrawing
     clearScreen();
@@ -158,6 +222,11 @@ function drawCells() {
     }
 }
 
+/**
+ * Inserts and draws an alive cell without simulating the next generation
+ * @param {Number} x New cell X position
+ * @param {Number} y New cell Y position
+ */
 function insertCell(x, y) {
     const cell = packCoord(x, y);
     activeCells.add(cell);
@@ -168,6 +237,24 @@ function insertCell(x, y) {
             potentialCellsNext.add(packCoord(x + nx, y + ny));
 
     drawCells();
+}
+
+/**
+ * Inserts a cell pattern at the (x, y) coordinates
+ * @param {Number} x Starting X position
+ * @param {Number} y Starting Y position
+ * @param {string[]} pattern An array of rows represented as strings. Alive cells are represented as `#`, otherwise they're considered dead.
+ */
+function insertCellPattern(x, y, pattern) {
+    for (var l = 0; l < pattern.length; l++) {
+        const line = pattern[l];
+        for (var c = 0; c < line.length; c++) {
+            const char = line[c];
+            if (char === "#") {
+                insertCell(x + c, y + l);
+            }
+        }
+    }
 }
 
 // On initialization
@@ -186,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// Resize canvas and recompute sizes on window resize
 window.addEventListener("resize", () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -233,13 +321,21 @@ document.addEventListener("keydown", (event) => {
             break;
 
         case "c":
-            activeCells = new Set();
-            activeCellsNext = new Set();
-            potentialCells = new Set();
-            potentialCellsNext = new Set();
-            generation = 0;
-            drawCells();
-            updateLabels();
+            resetGame();
+            break;
+
+        case "o":
+            insertCellPattern(mousePos.x, mousePos.y, [
+                "                        #           ",
+                "                      # #           ",
+                "            ##      ##            ##",
+                "           #   #    ##            ##",
+                "##        #     #   ##              ",
+                "##        #   # ##    # #           ",
+                "          #     #       #           ",
+                "           #   #                    ",
+                "            ##                      ",
+            ]);
             break;
 
         default:
