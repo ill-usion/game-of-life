@@ -7,6 +7,7 @@ canvas.height = window.innerHeight;
 
 const ctx = canvas.getContext("2d");
 
+const uiWindow = document.getElementById("ui");
 const fpsSlider = document.getElementById("fps");
 const fpsDisplay = document.getElementById("fps-display");
 
@@ -102,7 +103,7 @@ function neighborsCount(cx, cy) {
 function simulate() {
     activeCells = activeCellsNext;
     activeCellsNext = new Set();
-
+    
     potentialCells = potentialCellsNext;
 
     for (const cell of potentialCells) {
@@ -257,6 +258,14 @@ function insertCellPattern(x, y, pattern) {
     }
 }
 
+function toggleUi() {
+    const isHidden = uiWindow.getAttribute("data-hidden");
+    uiWindow.setAttribute(
+        "data-hidden",
+        isHidden === "true" ? "false" : "true"
+    );
+}
+
 // On initialization
 document.addEventListener("DOMContentLoaded", () => {
     drawGrid();
@@ -337,6 +346,10 @@ document.addEventListener("keydown", (event) => {
                 "            ##                      ",
             ]);
             break;
+
+        case "h":
+            toggleUi();
+            return;
 
         default:
             break;

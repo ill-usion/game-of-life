@@ -11,13 +11,17 @@
         * {
             box-sizing: border-box !important;
         }
+
+        *[data-hidden="true"] {
+            display: none !important;
+        }
     </style>
     <title>Conway's Game of Life</title>
 </head>
 
 <body class="min-vh-100 position-relative overflow-hidden">
     <canvas id="game"></canvas>
-    <div
+    <div id="ui"
         class="z-3 position-absolute position-absolute top-50 end-0 translate-middle-y p-3 bg-opacity-25 bg-black rounded-4 m-4">
         <div class="my-3">
             <h2>Stats</h2>
@@ -45,6 +49,9 @@
                 </li>
                 <li>
                     <span><kbd>C</kbd> - Clear/reset</span>
+                </li>
+                <li>
+                    <span><kbd>H</kbd> - Toggle UI</span>
                 </li>
                 <li>
                     <span>And you can draw by clicking and dragging your mouse across the canvas</span>
